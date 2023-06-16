@@ -1,0 +1,362 @@
+## Load libraries ##
+library(Seurat)
+library(tidyverse)
+library(ggpubr)
+library(devtools)
+library(harmony)
+
+################# DATA UPLOAD AND QC ON SEPARATE SAMPLES ######################
+#### FEMORAL SAMPLES ####
+### Upload Femoral data ###
+#FEMPIC01
+femPIC01.data <- Read10X(data.dir = "PIC01_Femoral_OUTS")
+srtfemPIC01<- CreateSeuratObject(counts = femPIC01.data, project = "femoral 1,2 & 3")
+#FEMPIC01
+femPIC42.data <- Read10X(data.dir = "PIC42_Femoral_OUTS")
+srtfemPIC42<- CreateSeuratObject(counts = femPIC42.data, project = "femoral 4")
+#COMBINE
+femPIC01_femPIC42_srt <- merge(x = srtfemPIC01, y = srtfemPIC42)
+#FEMPIC45
+femPIC45.data <- Read10X(data.dir = "PIC45_Femoral_OUTS")
+srtfemPIC45<- CreateSeuratObject(counts = femPIC45.data, project = "femoral 5")
+#COMBINE
+femPIC01_femPIC42_femPIC45_srt <- merge(x = femPIC01_femPIC42_srt, y = srtfemPIC45)
+#FEMPIC46
+femPIC46.data <- Read10X(data.dir = "PIC46_Femoral_OUTS")
+srtfemPIC46<- CreateSeuratObject(counts = femPIC46.data, project = "femoral 6")
+#COMBINE
+femPIC01_femPIC42_femPIC45_femPIC46_srt <- merge(x = femPIC01_femPIC42_femPIC45_srt, y = srtfemPIC46)
+#FEMPIC48
+femPIC48.data <- Read10X(data.dir = "PIC48_Femoral_OUTS")
+srtfemPIC48<- CreateSeuratObject(counts = femPIC48.data, project = "femoral 7")
+#COMBINE
+femPIC01_femPIC42_femPIC45_femPIC46_femPIC48_srt <- merge(x = femPIC01_femPIC42_femPIC45_femPIC46_srt, y = srtfemPIC48)
+#FEMPIC50
+femPIC50.data <- Read10X(data.dir = "PIC50_Femoral_OUTS")
+srtfemPIC50<- CreateSeuratObject(counts = femPIC50.data, project = "femoral 8")
+#COMBINE
+femPIC01_femPIC42_femPIC45_femPIC46_femPIC48_femPIC50_srt <- merge(x = femPIC01_femPIC42_femPIC45_femPIC46_femPIC48_srt, y = srtfemPIC50)
+#FEMPIC53
+femPIC53.data <- Read10X(data.dir = "PIC53_Femoral_OUTS")
+srtfemPIC53<- CreateSeuratObject(counts = femPIC53.data, project = "femoral 9")
+#COMBINE
+full_femoral_srt <- merge(x = femPIC01_femPIC42_femPIC45_femPIC46_femPIC48_femPIC50_srt, y = srtfemPIC53)
+
+### Quality Control Femoral data ###
+# Add in the Mitochondrial PCT% information
+full_femoral_srt$percent.mt <- PercentageFeatureSet(full_femoral_srt, pattern = "^MT-")
+
+# nCount_RNA is the number of UMI counts in a cell
+hist(full_femoral_srt$nCount_RNA)
+
+# nFeature_RNA is the number of different genes that had any reads
+hist(full_femoral_srt$nFeature_RNA)
+
+# percent.mt is the percent mitochondrial reads
+hist(full_femoral_srt$percent.mt)
+
+# Make a violin plot of the QC columns
+VlnQCplt <- VlnPlot(full_femoral_srt, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"),
+                    ncol = 3)
+VlnQCplt
+
+ggsave(filename = "QC_Vln_Femoral.png", plot = plt, width = 7, height = 3.5)
+ggsave(filename = "QC_Vln_Femoral_aftersubet.png", plot = VlnQCplt, width = 7, height = 3.5)
+
+# Filter out unwanted cells from full femoral srt
+full_femoral_srt <- subset(full_femoral_srt, subset = 
+                             nFeature_RNA > 200 & nFeature_RNA < 2500 
+                           & nCount_RNA > 200 & nCount_RNA < 10000 
+                           & percent.mt < 10) 
+
+#### CAROTID SAMPLES ####
+### Upload Carotid data ###
+#CARPIC01
+carPIC01.data <- Read10X(data.dir = "PIC01_Carotid_OUTS")
+srtcarPIC01<- CreateSeuratObject(counts = carPIC01.data, project = "carotid 1 & 2")
+#CARPIC49
+carPIC49.data <- Read10X(data.dir = "PIC49_Carotid_OUTS")
+srtcarPIC49<- CreateSeuratObject(counts = carPIC49.data, project = "carotid 3")
+#COMBINE
+carPIC01_carPIC49_srt <- merge(x = srtcarPIC01, y = srtcarPIC49)
+#CARPIC51
+carPIC51.data <- Read10X(data.dir = "PIC51_Carotid_OUTS")
+srtcarPIC51<- CreateSeuratObject(counts = carPIC51.data, project = "carotid 4")
+#COMBINE
+full_carotid_srt <- merge(x = carPIC01_carPIC49_srt, y = srtcarPIC51)
+
+###Quality Control Carotid data ###
+# Add in the Mitochondrial PCT% information
+full_carotid_srt$percent.mt <- PercentageFeatureSet(full_carotid_srt, pattern = "^MT-")
+
+
+# nCount_RNA is the number of UMI counts in a cell
+hist(full_carotid_srt$nCount_RNA)
+
+# nFeature_RNA is the number of different genes that had any reads
+hist(full_carotid_srt$nFeature_RNA)
+
+# percent.mt is the percent mitochondrial reads
+hist(full_carotid_srt$percent.mt)
+
+# Make a violin plot of the QC columns
+VLnplt_Carotid <- VlnPlot(full_carotid_srt, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"),
+                          ncol = 3)
+VLnplt_Carotid 
+ggsave(filename = "QC_Full_Carotid_after.png", plot = VLnplt_Carotid, width = 7, height = 3.5)
+
+# Filter out unwanted cells from full carotid srt
+full_carotid_srt <- subset(full_carotid_srt, subset = 
+                             nFeature_RNA > 200 & nFeature_RNA < 2500 
+                           & nCount_RNA > 200 & nCount_RNA < 10000 
+                           & percent.mt < 10) 
+
+
+####################### END DATA UPLOAD AND QUALITY CONTROL ON SEPARATE SAMPLES #######################
+
+####################### COMBINE SAMPLES, NORMALIZE, SCALE ######################
+### combine full carotid srt and full femoral srt ###
+Carotid_Femoral_srt <- merge(x= full_femoral_srt, y= full_carotid_srt)
+### Normalize and Scale the data ###
+# Log-transform the counts
+Carotid_Femoral_srt <- NormalizeData(Carotid_Femoral_srt)
+# Find Variable Features
+Carotid_Femoral_srt <- FindVariableFeatures(Carotid_Femoral_srt)
+# Scale the data
+Carotid_Femoral_srt <- ScaleData(Carotid_Femoral_srt)
+
+#remove Mito genes
+Carotid_Femoral_srt <- Carotid_Femoral_srt[!grepl("^MT-", rownames(Carotid_Femoral_srt)), ]
+Carotid_Femoral_srt <- Carotid_Femoral_srt[!grepl("^MTRNR", rownames(Carotid_Femoral_srt)), ]
+
+#remove Ribo genes
+Carotid_Femoral_srt <- Carotid_Femoral_srt[!grepl("^RP[SL]", rownames(Carotid_Femoral_srt)), ]
+
+####################### Visualize Carotid vs femoral with PCA BEFORE Integration and correcting for batch ######################
+# Run PCA
+Carotid_Femoral_srt <- RunPCA(Carotid_Femoral_srt)
+# Plot the PCA
+DimPlot(Carotid_Femoral_srt, reduction = "pca", group.by = "orig.ident")
+
+# Find nearest neighbors and construct the graph
+Carotid_Femoral_srt <- FindNeighbors(Carotid_Femoral_srt, k.param = 50, dims = 1:30)
+# Find the clusters
+Carotid_Femoral_srt <- FindClusters(Carotid_Femoral_srt, resolution = 0.30)
+# Get the UMAP embedding
+Carotid_Femoral_srt <- RunUMAP(Carotid_Femoral_srt, dims = 1:30)
+##change original sample to either "carotid" or "femoral"
+Idents(Carotid_Femoral_srt) <- Carotid_Femoral_srt$orig.ident
+Carotid_Femoral_srt <- RenameIdents(Carotid_Femoral_srt, 
+                                    'carotid 1 & 2' = 'carotid',
+                                    'carotid 3' = 'carotid',
+                                    'carotid 4' = 'carotid',
+                                    'femoral 1,2 & 3' = 'femoral',
+                                    'femoral 4' = 'femoral',
+                                    'femoral 5' = 'femoral',
+                                    'femoral 6' = 'femoral',
+                                    'femoral 7' = 'femoral',
+                                    'femoral 8' = 'femoral',
+                                    'femoral 9' = 'femoral')
+
+#Add these idents into new column labelled "type"
+Carotid_Femoral_srt$type <- Idents(Carotid_Femoral_srt)
+# Plot the UMAP with samples
+DimPlot(Carotid_Femoral_srt, reduction = "umap", group.by = "orig.ident")
+# Plot the UMAP with carotid or femoral
+DimPlot(Carotid_Femoral_srt, reduction = "umap", group.by = "type")
+
+##################################INTEGRATE WITH HARMONY##################
+Carotid_Femoral_srt.int <- RunHarmony(Carotid_Femoral_srt, group.by.vars = "orig.ident")
+
+######################PREFORM CLUSTERING######################
+Carotid_Femoral_srt.int <- RunUMAP(Carotid_Femoral_srt.int, reduction = "harmony", dims = 1:34)
+# Find nearest neighbors and construct the graph
+Carotid_Femoral_srt.int <- FindNeighbors(Carotid_Femoral_srt.int, k.param = 50, dims = 1:30)
+# Find the clusters
+Carotid_Femoral_srt.int <- FindClusters(Carotid_Femoral_srt.int, resolution = 0.30)
+# Dim Plot Clusters
+DimPlot(Carotid_Femoral_srt.int, reduction = "umap", label = TRUE, label.size = 11, pt.size=0.5)
+DimPlot(Carotid_Femoral_srt.int, reduction = "umap", split.by = "type", label = TRUE, label.size = 11, pt.size=0.5)
+
+############### CELL CALLING #################
+#using known cell markers#
+VlnPlot(Carotid_Femoral_srt.int, features = "CD14")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CD14")
+VlnPlot(Carotid_Femoral_srt.int, features = "CD68")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CD68")
+VlnPlot(Carotid_Femoral_srt.int, features = "KIT")
+FeaturePlot(Carotid_Femoral_srt.int, features = "KIT")
+VlnPlot(Carotid_Femoral_srt.int, features = "CSF3R")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CSF3R")
+VlnPlot(Carotid_Femoral_srt.int, features = "CLEC4C")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CLEC4C")
+VlnPlot(Carotid_Femoral_srt.int, features = "HLA-DRA")
+FeaturePlot(Carotid_Femoral_srt.int, features = "HLA-DRA")
+VlnPlot(Carotid_Femoral_srt.int, features = "CD79A")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CD79A")
+VlnPlot(Carotid_Femoral_srt.int, features = "IGHM")
+FeaturePlot(Carotid_Femoral_srt.int, features = "IGHM")
+VlnPlot(Carotid_Femoral_srt.int, features = "IGHG2")
+FeaturePlot(Carotid_Femoral_srt.int, features = "IGHG2")
+VlnPlot(Carotid_Femoral_srt.int, features = "CD4")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CD4")
+VlnPlot(Carotid_Femoral_srt.int, features = "CD3D")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CD3D")
+VlnPlot(Carotid_Femoral_srt.int, features = "CD8A")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CD8A")
+VlnPlot(Carotid_Femoral_srt.int, features = "CD2")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CD2")
+VlnPlot(Carotid_Femoral_srt.int, features = "NKG7")
+FeaturePlot(Carotid_Femoral_srt.int, features = "NKG7")
+VlnPlot(Carotid_Femoral_srt.int, features = "MYH11")
+FeaturePlot(Carotid_Femoral_srt.int, features = "MYH11")
+VlnPlot(Carotid_Femoral_srt.int, features = "ACTA2")
+FeaturePlot(Carotid_Femoral_srt.int, features = "ACTA2")
+VlnPlot(Carotid_Femoral_srt.int, features = "CCR2")
+FeaturePlot(Carotid_Femoral_srt.int, features = "CCR2")
+
+## Using the Automatic Labelling with Celltypist
+#convert to anndat
+sceasy::convertFormat(Carotid_Femoral_srt.int, from="seurat", to="anndata",
+                      outFile='Carotid_Femoral_srt.int.h5ad')
+
+predictions_allcells_high <- read.csv('predicted_labels_high_allcells.csv', row.names = 1)
+Carotid_Femoral_srt.int <- AddMetaData(Carotid_Femoral_srt.int, metadata = predictions_allcells_high)
+
+CelltypistUMAP_predictedlabels <- DimPlot(Carotid_Femoral_srt.int, reduction = "umap", group.by = "majority_voting", label = FALSE, label.size = 3, pt.size = 0.75, repel = FALSE) + theme_classic(base_size = 10)
+ggsave(filename = "CelltypistUMAP_allcells.svg", plot = CelltypistUMAP_predictedlabels, width = 11, height = 10, dpi = 600)
+CelltypistUMAP_predictedlabels_split <- DimPlot(Carotid_Femoral_srt.int, reduction = "umap", group.by = "majority_voting", split.by = "type", label = FALSE, label.size = 3, pt.size = 0.75, repel = FALSE) + theme_classic(base_size = 10)
+ggsave(filename = "CelltypistUMAP_labels_allcells_split.svg", plot = CelltypistUMAP_predictedlabels_split, width = 20, height = 10, dpi = 600)
+
+Celltypist.celltypes <- table(Carotid_Femoral_srt.int$type, Carotid_Femoral_srt.int$majority_voting)
+Celltypist.celltypes_perc <- (Celltypist.celltypes / rowSums(Celltypist.celltypes)) * 100
+
+##Set new Idents for cell type
+new.idents <- c(
+  "0" = "CD3+CD4+ T cells I",
+  "1" = "CD3+CD8+ T cells I",
+  "2" = "CD3+CD8+ T cells II",
+  "3" = "CD79A+ B Cells",
+  "4" = "CD14+CD68+ Macrophages I",
+  "5" = "CD14+CD68+ Macrophages II",
+  "6" = "Natural Killer Cells",
+  "7" = "Monocytes",
+  "8" = "CD3+CD4+ T Cells II",
+  "9" = "CD3+CD8+ T Cells III",
+  "10" = "KIT+ Mast Cells",  
+  "11" = "DCs",       
+  "12" = "Smooth Muscle Cells",
+  "13" = "Plasma Cells"
+)
+
+#Store Cell type labels in new column
+Carotid_Femoral_srt.int <- RenameIdents(Carotid_Femoral_srt.int, new.idents)
+Carotid_Femoral_srt.int$cell_type <- Idents(Carotid_Femoral_srt.int)
+
+############### GERERATE DOTPLOT AND HEATMAP #################
+#Ensure Idents are set to the cluster
+Idents(Carotid_Femoral_srt.int) <- Carotid_Femoral_srt.int$seurat_clusters
+#Find Markers in all cells ###
+Carotid_Femoral_srt.int.markers <- Seurat::FindAllMarkers(Carotid_Femoral_srt.int, assay = "RNA", only.pos = TRUE)
+write.csv(Carotid_Femoral_srt.int.markers, "Markers.allcells.int.csv")
+
+# Top 5 marker genes in each cluster #
+top5 <- Carotid_Femoral_srt.int.markers %>% group_by(cluster) %>%
+  dplyr::slice_max(get(grep("^avg_log", colnames(Carotid_Femoral_srt.int.markers), value = TRUE)),
+                   n = 5)
+# Create the dot plot
+Seurat::DotPlot(Carotid_Femoral_srt.int, features = unique(top5$gene)) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 1,
+                                                     size = 8, hjust = 1)) +
+  Seurat::NoLegend() +
+  ggplot2::coord_flip()
+
+# Creat a heatmap
+heatmap_allcells <- DoHeatmap(Carotid_Femoral_srt.int, features = unique(top5$gene), group.by = "seurat_clusters",
+                  group.colors = c('#F6BAA2', '#AEDFF2', '#C7E5B4')) +
+                  scale_fill_viridis() 
+                  
+                  
+############### GENERATE PROPORTIONS AND LOGODDS RATIOS ################ 
+# Compare no. Cells and proportion of cells in each Cluster
+compTable <- table(Carotid_Femoral_srt.int$orig.ident, Carotid_Femoral_srt.int$seurat_clusters)
+compTable <- (compTable / rowSums(compTable)) * 100
+compTable
+
+compTable_samples <- table(Carotid_Femoral_srt.int$orig.ident, Carotid_Femoral_srt.int$seurat_clusters)
+comTable_celltypes <- table(Carotid_Femoral_srt.int$orig.ident, split.by = "type", Carotid_Femoral_srt.int$cell_type)
+
+#odds ratios and Fishers exact test #
+library("epitools")
+
+cluster0_ORtable <- matrix(c(8369,22286,12516,22749), nrow = 2, ncol = 2)
+oddsratio.wald(cluster0_ORtable)
+
+cluster1_ORtable <- matrix(c(6707,23948,7186,28079), nrow = 2, ncol = 2)
+oddsratio.wald(cluster1_ORtable)
+
+cluster2_ORtable <- matrix(c(3937,26718,1601,33664), nrow = 2, ncol = 2)
+oddsratio.wald(cluster2_ORtable)
+
+cluster3_ORtable <- matrix(c(248,30407,5211,30054), nrow = 2, ncol = 2)
+oddsratio.wald(cluster3_ORtable)
+
+cluster4_ORtable <- matrix(c(3769,26886,1238,34027), nrow = 2, ncol = 2)
+oddsratio.wald(cluster4_ORtable)
+
+cluster5_ORtable <- matrix(c(3039,27616,638,34627), nrow = 2, ncol = 2)
+oddsratio.wald(cluster5_ORtable)
+
+cluster6_ORtable <- matrix(c(769,29886,2610,32655), nrow = 2, ncol = 2)
+oddsratio.wald(cluster6_ORtable)
+
+cluster7_ORtable <- matrix(c(1200,29455,1930,33335), nrow = 2, ncol = 2)
+oddsratio.wald(cluster7_ORtable)
+
+cluster8_ORtable <- matrix(c(673,29982,664,34601), nrow = 2, ncol = 2)
+oddsratio.wald(cluster8_ORtable)
+
+cluster9_ORtable <- matrix(c(382,30273,486,34779), nrow = 2, ncol = 2)
+oddsratio.wald(cluster9_ORtable)
+
+cluster10_ORtable <- matrix(c(447,30208,393,34872), nrow = 2, ncol = 2)
+oddsratio.wald(cluster10_ORtable)
+
+cluster11_ORtable <- matrix(c(486,30169,262,35003), nrow = 2, ncol = 2)
+oddsratio.wald(cluster11_ORtable)
+
+cluster12_ORtable <- matrix(c(328,30327,374,34891), nrow = 2, ncol = 2)
+oddsratio.wald(cluster12_ORtable)
+
+cluster13_ORtable <- matrix(c(301,30354,156,35109), nrow = 2, ncol = 2)
+oddsratio.wald(cluster13_ORtable)
+
+
+################# DIFFERENTIAL EXPRESSOIN WITH VOLCANO PLOTS ###############################
+car_vs_fem.all <- FindMarkers(Carotid_Femoral_srt.int, ident.1 = "carotid", ident.2 = "femoral", only.pos = FALSE, group.by = "type")
+
+keyvals <- ifelse(
+  car_vs_fem.all$avg_log2FC < -0.25, 'royalblue',
+  ifelse(car_vs_fem.all$avg_log2FC > 0.25, 'gold',
+         'black')
+)
+
+keyvals[is.na(keyvals)] <- 'black'
+names(keyvals)[keyvals == 'gold'] <- 'Carotid'
+names(keyvals)[keyvals == 'White'] <- 'Null'
+names(keyvals)[keyvals == 'royalblue'] <- 'Femoral'
+
+Volcano_allcells <- EnhancedVolcano(car_vs_fem.all,
+                lab = rownames(car_vs_fem.all),
+                title = 'All Cells',
+                x = 'avg_log2FC',
+                y = 'p_val_adj',
+                selectLab = rownames(car_vs_fem.all)[which(names(keyvals) %in% c('Carotid', 'Femoral'))],
+                labSize = 4.5,
+                xlim = c(-2, 2),
+                colCustom = keyvals,
+                FCcutoff = 0.25,
+                legendPosition = 'right',
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE
+)
