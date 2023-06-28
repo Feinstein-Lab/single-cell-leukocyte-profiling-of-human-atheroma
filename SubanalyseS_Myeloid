@@ -1,0 +1,423 @@
+library("Seurat")
+library("ggplot2")
+library("dplyr")
+library("EnhancedVolcano")
+library("tidyverse")
+library("devtools")
+library("harmony")
+library("RColorBrewer")
+library("epitools")
+library("EnhancedVolcano")
+
+# Extract all myeloid cells & re-cluster #
+#Ensure Idents are set to the cluster
+Idents(Carotid_Femoral_srt.int) <- Carotid_Femoral_srt.int$seurat_clusters
+
+#Subset myeloid Clusters#
+Carotid_Femoral_srt.AllMyeloid <- subset(Carotid_Femoral_srt.int, idents = c(4,5,7,10,11))
+DimPlot(Carotid_Femoral_srt.AllMyeloid, group.by = "seurat_clusters", label = TRUE)
+
+#Extract raw counts from all Myeloid clusters and Re-cluster#
+###Split into Carotid and Femoral Samples###
+Carotid_Femoral_srt.AllMyeloid.List <- SplitObject(Carotid_Femoral_srt.AllMyeloid, split.by = "orig.ident")
+
+#Get assay myeloid data from all Carotid samples
+#Sample 1 & 2
+allmyeloid.raw.carotid_1_2.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["carotid 1 & 2"]], slot = "counts"))
+#Make new seurat object with carotid myeloid cells
+allmyeloid.carotid_1_2_srt <- CreateSeuratObject(counts = allmyeloid.raw.carotid_1_2.data , project = "carotid 1 & 2")
+#Sample 3
+allmyeloid.raw.carotid_3.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["carotid 3"]], slot = "counts"))
+#Make new seurat object with carotid myeloid cells
+allmyeloid.carotid_3_srt <- CreateSeuratObject(counts = allmyeloid.raw.carotid_3.data , project = "carotid 3")
+#merge
+allmyeloid.Carotid_1_2_3_srt <- merge(x= allmyeloid.carotid_1_2_srt, y= allmyeloid.carotid_3_srt)
+#sample 4
+allmyeloid.raw.carotid_4.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["carotid 4"]], slot = "counts"))
+#Make new seurat object with carotid myeloid cells
+allmyeloid.carotid_4_srt <- CreateSeuratObject(counts = allmyeloid.raw.carotid_4.data , project = "carotid 4")
+#merge
+allmyeloid.Carotid_All <- merge(x= allmyeloid.Carotid_1_2_3_srt, y= allmyeloid.carotid_4_srt)
+
+
+#Get assay myeloid data from all Femoral samples
+#Sample 1 & 2& 3
+allmyeloid.raw.femoral_1_2_3.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["femoral 1,2 & 3"]], slot = "counts"))
+#Make new seurat object with femoral myeloid cells
+allmyeloid.femoral_1_2_3_srt <- CreateSeuratObject(counts = allmyeloid.raw.femoral_1_2_3.data , project = "femoral 1,2 & 3")
+#Sample 4
+allmyeloid.raw.femoral_4.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["femoral 4"]], slot = "counts"))
+#Make new seurat object with femoral myeloid cells
+allmyeloid.femoral_4_srt <- CreateSeuratObject(counts = allmyeloid.raw.femoral_4.data , project = "femoral 4")
+#merge
+allmyeloid.femoral_1_2_3_4_srt <- merge(x= allmyeloid.femoral_1_2_3_srt, y= allmyeloid.femoral_4_srt)
+#Sample 5
+allmyeloid.raw.femoral_5.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["femoral 5"]], slot = "counts"))
+#Make new seurat object with femoral myeloid cells
+allmyeloid.femoral_5_srt <- CreateSeuratObject(counts = allmyeloid.raw.femoral_5.data , project = "femoral 5")
+#merge
+allmyeloid.femoral_1_2_3_4_5_srt <- merge(x= allmyeloid.femoral_1_2_3_4_srt, y= allmyeloid.femoral_5_srt)
+#Sample 6
+allmyeloid.raw.femoral_6.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["femoral 6"]], slot = "counts"))
+#Make new seurat object with femoral myeloid cells
+allmyeloid.femoral_6_srt <- CreateSeuratObject(counts = allmyeloid.raw.femoral_6.data , project = "femoral 6")
+#merge
+allmyeloid.femoral_1_2_3_4_5_6_srt <- merge(x= allmyeloid.femoral_1_2_3_4_5_srt, y= allmyeloid.femoral_6_srt)
+#Sample 7
+allmyeloid.raw.femoral_7.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["femoral 7"]], slot = "counts"))
+#Make new seurat object with femoral myeloid cells
+allmyeloid.femoral_7_srt <- CreateSeuratObject(counts = allmyeloid.raw.femoral_7.data , project = "femoral 7")
+#merge
+allmyeloid.femoral_1_2_3_4_5_6_7_srt <- merge(x= allmyeloid.femoral_1_2_3_4_5_6_srt, y= allmyeloid.femoral_7_srt)
+#Sample 8
+allmyeloid.raw.femoral_8.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["femoral 8"]], slot = "counts"))
+#Make new seurat object with femoral myeloid cells
+allmyeloid.femoral_8_srt <- CreateSeuratObject(counts = allmyeloid.raw.femoral_8.data , project = "femoral 8")
+#merge
+allmyeloid.femoral_1_2_3_4_5_6_7_8_srt <- merge(x= allmyeloid.femoral_1_2_3_4_5_6_7_srt, y= allmyeloid.femoral_8_srt)
+#Sample 9
+allmyeloid.raw.femoral_9.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllMyeloid.List[["femoral 9"]], slot = "counts"))
+#Make new seurat object with femoral myeloid cells
+allmyeloid.femoral_9_srt <- CreateSeuratObject(counts = allmyeloid.raw.femoral_9.data , project = "femoral 9")
+#merge
+allmyeloid.femoral_all_srt <- merge(x= allmyeloid.femoral_1_2_3_4_5_6_7_8_srt, y= allmyeloid.femoral_9_srt)
+
+#merge the new myeloid seurat objects
+allmyeloid.Carotid_Femoral_srt <- merge(x= allmyeloid.Carotid_All, y= allmyeloid.femoral_all_srt)
+
+## Normalize and Scale the data ##
+# Log-transform the counts
+allmyeloid.Carotid_Femoral_srt <- NormalizeData(allmyeloid.Carotid_Femoral_srt)
+# Find Variable Features
+allmyeloid.Carotid_Femoral_srt  <- FindVariableFeatures(allmyeloid.Carotid_Femoral_srt)
+# Scale the data
+allmyeloid.Carotid_Femoral_srt <- ScaleData(allmyeloid.Carotid_Femoral_srt)
+# Run PCA
+allmyeloid.Carotid_Femoral_srt  <- RunPCA(allmyeloid.Carotid_Femoral_srt)
+#RUN UMAP
+allmyeloid.Carotid_Femoral_srt <- RunUMAP(allmyeloid.Carotid_Femoral_srt, dims = 1:30)
+#Show Dimplot
+DimPlot(allmyeloid.Carotid_Femoral_srt, reduction = "umap", group.by = "orig.ident")
+
+##change original sample to either "carotid" or "femoral"
+Idents(allmyeloid.Carotid_Femoral_srt) <- allmyeloid.Carotid_Femoral_srt$orig.ident
+allmyeloid.Carotid_Femoral_srt <- RenameIdents(allmyeloid.Carotid_Femoral_srt, 
+                                               'carotid 1 & 2' = 'carotid',
+                                               'carotid 3' = 'carotid',
+                                               'carotid 4' = 'carotid',
+                                               'femoral 1,2 & 3' = 'femoral',
+                                               'femoral 4' = 'femoral',
+                                               'femoral 5' = 'femoral',
+                                               'femoral 6' = 'femoral',
+                                               'femoral 7' = 'femoral',
+                                               'femoral 8' = 'femoral',
+                                               'femoral 9' = 'femoral')
+
+#Add these idents into new column labelled "type"
+allmyeloid.Carotid_Femoral_srt$type <- Idents(allmyeloid.Carotid_Femoral_srt)
+#show dimplot with just carotid and femoral
+DimPlot(allmyeloid.Carotid_Femoral_srt, reduction = "umap", group.by = "type")
+
+##INTEGRATE###
+#Run Harmony
+allmyeloid.Carotid_Femoral_srt.int <- RunHarmony(allmyeloid.Carotid_Femoral_srt, group.by.vars = "orig.ident")
+#Run UMAP
+allmyeloid.Carotid_Femoral_srt.int <- RunUMAP(allmyeloid.Carotid_Femoral_srt.int, reduction = "harmony", dims = 1:25)
+#Show UMAP by sample and type
+DimPlot(allmyeloid.Carotid_Femoral_srt.int, group.by='orig.ident',pt.size=0.6)
+DimPlot(allmyeloid.Carotid_Femoral_srt.int, group.by='type',pt.size=0.6)
+# Find nearest neighbors and construct the graph
+allmyeloid.Carotid_Femoral_srt.int <- FindNeighbors(allmyeloid.Carotid_Femoral_srt.int, k.param = 50, dims = 1:15)
+# Find the clusters
+allmyeloid.Carotid_Femoral_srt.int <- FindClusters(allmyeloid.Carotid_Femoral_srt.int, resolution = 0.20)
+
+# Plot the UMAP with clustering
+DimPlot(allmyeloid.Carotid_Femoral_srt.int, split.by = "type", reduction = "umap", label = TRUE, label.size = 5, pt.size = 0.6)
+
+############### Cell Classification using known cell markers #################
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "HLA-DRA")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CLEC9A")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CLEC10A")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "MRC1")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CD1C")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "IRF8")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "KIT")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CLEC4C")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CSF3R")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CD14") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CD68")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "APOE") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "LYVE1") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "APOC1") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "IL1B")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "IRF8") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "TREM2") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "FCN1") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CD1C") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "ISG15")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "VCAN") 
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CD14")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "CD68")
+VlnPlot(allmyeloid.Carotid_Femoral_srt.int, features = "ISG15")
+
+##Set new Idents for cell type
+new.idents.myeloid <- c(
+  "0" = "Macrophages I",
+  "1" = "Macrophages II",
+  "2" = "Monocytes",
+  "3" = "KIT+ Mast Cells",
+  "4" = " Dendritic Cells",
+  "5" = "Macrophages III",
+  "6" = "LYVE1+ Macrophages",
+  "7" = "IFN+ Myeloid"
+)
+
+#Add these idents into new column labelled "type"
+allmyeloid.Carotid_Femoral_srt.int <- RenameIdents(allmyeloid.Carotid_Femoral_srt.int, new.idents.myeloid)
+allmyeloid.Carotid_Femoral_srt.int$cell_type <- Idents(allmyeloid.Carotid_Femoral_srt.int)
+
+
+############### GERERATE DOTPLOT AND HEATMAP #################
+############### Dotplot #1 #################
+#Ensure Idents are set to the cluster
+Idents(allmyeloid.Carotid_Femoral_srt.int) <- allmyeloid.Carotid_Femoral_srt.int$seurat_clusters
+#Find Markers in all cells ###
+allmyeloid.Carotid_Femoral_srt.int.markers <- Seurat::FindAllMarkers(allmyeloid.Carotid_Femoral_srt.int, assay = "RNA", only.pos = TRUE)
+write.csv(allmyeloid.Carotid_Femoral_srt.int.markers, "AllMyeloid.Markers.allcells.int.csv")
+
+# Top 5 marker genes in each cluster #
+top5.myeloid <- allmyeloid.Carotid_Femoral_srt.int.markers %>% group_by(cluster) %>%
+  dplyr::slice_max(get(grep("^avg_log", colnames(allmyeloid.Carotid_Femoral_srt.int.markers), value = TRUE)),
+                   n = 5)
+# Create the dot plot
+Dotplot_myeloid <- Seurat::DotPlot(allmyeloid.Carotid_Femoral_srt.int, features = unique(top5.myeloid$gene)) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 1,
+                                                     size = 15, hjust = 1)) +
+  Seurat::NoLegend() +
+  ggplot2::coord_flip()
+
+ggsave(filename = "Dotplot_myeloid.svg", plot = Dotplot_myeloid, width = 10, height = 15, dpi = 600)
+
+############### HEATMAP #################
+Heatmap_myeloid <- DoHeatmap(allmyeloid.Carotid_Femoral_srt.int, features = unique(top5.myeloid$gene), group.by = "seurat_clusters",
+          group.colors = c('#F6BAA2', '#AEDFF2', '#C7E5B4')) +
+          scale_fill_viridis()
+       
+ggsave(filename = "Heatmap_myeloid_Final.png", plot = Heatmap_myeloid, width = 7.5, height = 4.4, dpi = 600)
+
+############### GO ONTOLOGY Dotplot #################
+#FIND ALL MARKERS####
+myeloid_int.markers <- FindAllMarkers(allmyeloid.Carotid_Femoral_srt.int, only.pos = TRUE, min.pct = 0.1, logfc.threshold = 0.25)
+
+#Subsetting top 100 markers with adjusted p values lower than .05#
+top100 <- myeloid_int.markers %>% group_by(cluster) %>% top_n(n = 100, wt = avg_log2FC)
+top100pval <- subset(top100, rowSums(top100[5] < 0.05) > 0)
+write_csv(top100pval, file = "myeloid_top100pval.csv")
+
+#### GO DOTPLOT 
+df <- top100pval[,7:6]
+dfsample <- split(df$gene,df$cluster)
+length(dfsample)
+
+dfsample$`0` = bitr(dfsample$`0`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+dfsample$`1` = bitr(dfsample$`1`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+dfsample$`2` = bitr(dfsample$`2`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+dfsample$`3` = bitr(dfsample$`3`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+dfsample$`4` = bitr(dfsample$`4`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+dfsample$`5` = bitr(dfsample$`5`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+dfsample$`6` = bitr(dfsample$`6`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+dfsample$`7` = bitr(dfsample$`7`, fromType="SYMBOL", toType="ENTREZID", OrgDb="org.Hs.eg.db")
+
+genelist <- list("0" = dfsample$`0`$ENTREZID, 
+                 "1" = dfsample$`1`$ENTREZID,
+                 "2" = dfsample$`2`$ENTREZID,
+                 "3" = dfsample$`3`$ENTREZID,
+                 "4" = dfsample$`4`$ENTREZID,
+                 "5" = dfsample$`5`$ENTREZID,
+                 "6" = dfsample$`6`$ENTREZID,
+                 "7" = dfsample$`7`$ENTREZID
+)
+
+GOclusterplot <- compareCluster(geneCluster = genelist, fun = "enrichGO", OrgDb = "org.Hs.eg.db")
+dotplot(GOclusterplot)
+
+################# DIFFERENTIAL EXPRESSOIN WITH VOLCANO PLOTS ###############################
+car_vs_fem.myeloid.all <- FindMarkers(allmyeloid.Carotid_Femoral_srt.int, ident.1 = "carotid", ident.2 = "femoral", group.by = "type", only.pos = FALSE)
+
+keyvals <- ifelse(
+  car_vs_fem.myeloid.all$avg_log2FC < -0.25, 'royalblue',
+  ifelse(car_vs_fem.myeloid.all$avg_log2FC > 0.25, 'gold',
+         'black')
+)
+
+keyvals[is.na(keyvals)] <- 'black'
+names(keyvals)[keyvals == 'gold'] <- 'Carotid'
+names(keyvals)[keyvals == 'White'] <- 'Null'
+names(keyvals)[keyvals == 'royalblue'] <- 'Femoral'
+
+
+Volcano_myeloid <- EnhancedVolcano(car_vs_fem.myeloid.all,
+                lab = rownames(car_vs_fem.myeloid.all),
+                title = '',
+                x = 'avg_log2FC',
+                y = 'p_val_adj',
+                selectLab = rownames(car_vs_fem.myeloid.all)[which(names(keyvals) %in% c('Carotid', 'Femoral'))],
+                labSize = 4.5,
+                xlim = c(-2, 2),
+                colCustom = keyvals,
+                FCcutoff = 0.25,
+                legendPosition = 'right',
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE
+)
+
+ggsave(filename = "Volcano_myeloid.svg", plot = Volcano_myeloid, width = 10, height = 8, dpi = 600)
+
+########## DE Volcano Plot between Cluster 0 and 5 ##############################
+cluster0_vs_5.all <- FindMarkers(allmyeloid.Carotid_Femoral_srt.int, ident.1 = 0, ident.2 = 5, only.pos = FALSE)
+
+
+keyvals <- ifelse(
+  cluster0_vs_5.all$avg_log2FC < -0.25, 'purple',
+  ifelse(cluster0_vs_5.all$avg_log2FC > 0.25, 'coral',
+         'black')
+)
+
+keyvals[is.na(keyvals)] <- 'black'
+names(keyvals)[keyvals == 'purple'] <- 'Cluster 5'
+names(keyvals)[keyvals == 'White'] <- 'Null'
+names(keyvals)[keyvals == 'coral'] <- 'Cluster 0'
+
+
+Volcano_myeloid_0V5 <- EnhancedVolcano(cluster0_vs_5.all,
+                lab = rownames(cluster0_vs_5.all),
+                title = '',
+                x = 'avg_log2FC',
+                y = 'p_val_adj',
+                selectLab = rownames(cluster0_vs_5.all),
+                labSize = 8,
+                axisLabSize = 20,
+                xlim = c(-5, 5),
+                colCustom = keyvals,
+                FCcutoff = 0.25,
+                legendPosition = 'right',
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE
+                
+)
+
+ggsave(filename = "Volcano_myeloid_0V5.svg", plot = Volcano_myeloid_0V5, width = 10, height = 7, dpi = 600)
+
+##########  GO ONTOLOGY for Cluster 0 and 5 ##############################
+#Upregulated in 0
+cluster0_vs_5 <- FindMarkers(allmyeloid.Carotid_Femoral_srt.int, ident.1 = "0", ident.2 = "5", only.pos = FALSE)
+
+cluster0_vs_5.sig <- cluster0_vs_5 %>%
+  filter(p_val_adj < 0.05) %>%
+  top_n(n = 100, wt = avg_log2FC) %>%
+  rownames_to_column("gene")
+
+cluster0_vs_5.sig.df <- as.data.frame(cluster0_vs_5.sig)  
+cluster0_vs_5.sig.df <- cluster0_vs_5.sig.df[,1]
+cluster0_vs_5.sig.df <- bitr(cluster0_vs_5.sig.df, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+
+cluster0_vs_5.sig.df   <- enrichGO(
+  cluster0_vs_5.sig.df$ENTREZID,
+  "org.Hs.eg.db",
+  keyType = "ENTREZID",
+  ont = "BP",
+  pvalueCutoff = 0.05,
+  pAdjustMethod = "BH",
+  qvalueCutoff = 0.2,
+  minGSSize = 10,
+  maxGSSize = 500,
+  readable = FALSE,
+  pool = FALSE
+)
+
+ggplot(cluster0_vs_5.sig.df, showCategory = 10,
+       aes(GeneRatio,
+           fct_reorder(Description, GeneRatio))) +
+  geom_segment(aes(xend=0, yend= Description)) +
+  geom_point(aes(color = p.adjust, size = Count)) + 
+  scale_color_gradientn(colors = c("coral", "coral2", "coral4"),
+                        trans = "log10",
+                        guide=guide_colorbar(reverse=TRUE,
+                                             order=1)) +
+  scale_size_continuous(range=c(2, 10)) +
+  xlab("Gene Ratio") +
+  theme_dose(12) +
+  ggtitle("Biological Processes") + 
+  theme_classic()
+
+#Upregulated in 5
+cluster5_vs_0 <- FindMarkers(allmyeloid.Carotid_Femoral_srt.int, ident.1 = "5", ident.2 = "0", only.pos = FALSE)
+
+cluster5_vs_0.sig <- cluster5_vs_0 %>%
+  filter(p_val_adj < 0.05) %>%
+  top_n(n = 100, wt = avg_log2FC) %>%
+  rownames_to_column("gene")
+
+cluster5_vs_0.sig.df <- as.data.frame(cluster5_vs_0.sig)  
+cluster5_vs_0.sig.df <- cluster5_vs_0.sig.df[,1]
+cluster5_vs_0.sig.df <- bitr(cluster5_vs_0.sig.df, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = "org.Hs.eg.db")
+
+cluster5_vs_0.sig.df <- enrichGO(
+  cluster5_vs_0.sig.df$ENTREZID,
+  "org.Hs.eg.db",
+  keyType = "ENTREZID",
+  ont = "BP",
+  pvalueCutoff = 0.05,
+  pAdjustMethod = "BH",
+  qvalueCutoff = 0.2,
+  minGSSize = 10,
+  maxGSSize = 500,
+  readable = FALSE,
+  pool = FALSE
+)
+
+ggplot(cluster5_vs_0.sig.df, showCategory = 10,
+       aes(GeneRatio,
+           fct_reorder(Description, GeneRatio))) +
+  geom_segment(aes(xend=0, yend= Description)) +
+  geom_point(aes(color = p.adjust, size = Count)) + 
+  scale_color_gradientn(colors = c("purple", "purple2", "purple4"),
+                        trans = "log10",
+                        guide=guide_colorbar(reverse=TRUE,
+                                             order=1)) +
+  scale_size_continuous(range=c(2, 10)) +
+  xlab("Gene Ratio") +
+  theme_dose(12) +
+  ggtitle("Biological Processes") + 
+  theme_classic()
+
+############### Proportions and LogOdds ratios################################
+#odds ratios and Fishers exact test #
+# Compare Cells in each Cluster
+compTable_myloid <- table(allmyeloid.Carotid_Femoral_srt.int$type, allmyeloid.Carotid_Femoral_srt.int$seurat_clusters)
+compTable_myloid_Perc <- (compTable_myloid / rowSums(compTable_myloid)) * 100
+
+#odds ratios and Fishers exact test #
+cluster0_ORtable <- matrix(c(3386,5555,367,4094), nrow = 2, ncol = 2)
+oddsratio.wald(cluster0_ORtable)
+
+cluster1_ORtable <- matrix(c(3043,5898,632,3829), nrow = 2, ncol = 2)
+oddsratio.wald(cluster1_ORtable)
+
+cluster2_ORtable <- matrix(c(1068,7873,1784,2677), nrow = 2, ncol = 2)
+oddsratio.wald(cluster2_ORtable)
+
+cluster3_ORtable <- matrix(c(443,8498,394,4067), nrow = 2, ncol = 2)
+oddsratio.wald(cluster3_ORtable)
+
+cluster4_ORtable <- matrix(c(526,8415,266,4195), nrow = 2, ncol = 2)
+oddsratio.wald(cluster4_ORtable)
+
+cluster5_ORtable <- matrix(c(285,8656,506,3955), nrow = 2, ncol = 2)
+oddsratio.wald(cluster5_ORtable)
+
+cluster6_ORtable <- matrix(c(82,8859,369,4092), nrow = 2, ncol = 2)
+oddsratio.wald(cluster6_ORtable)
+
+cluster7_ORtable <- matrix(c(108,8833,143,4318), nrow = 2, ncol = 2)
+oddsratio.wald(cluster7_ORtable)
