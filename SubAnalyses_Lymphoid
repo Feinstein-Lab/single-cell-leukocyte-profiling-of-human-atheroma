@@ -1,0 +1,295 @@
+library("Seurat")
+library("ggplot2")
+library("dplyr")
+library("EnhancedVolcano")
+library("tidyverse")
+library("devtools")
+library("harmony")
+library("RColorBrewer")
+library("epitools")
+library("EnhancedVolcano")
+
+# Extract all lymhoid cells & re-cluster #
+#Ensure Idents are set to the cluster
+Idents(Carotid_Femoral_srt.int) <- Carotid_Femoral_srt.int$seurat_clusters
+
+#Subset lymphoid Clusters#
+Carotid_Femoral_srt.AllLymphoid <- subset(Carotid_Femoral_srt.int, idents = c(0,1,2,3,6,8,9,13))
+
+#Extract raw counts from all lymphoid clusters and Re-cluster#
+###Split into Carotid and Femoral Samples###
+Carotid_Femoral_srt.AllLymphoid.List <- SplitObject(Carotid_Femoral_srt.AllLymphoid, split.by = "orig.ident")
+
+#Get assay lymphoid  data from all Carotid samples
+#Sample 1 & 2
+alllymphoid.raw.carotid_1_2.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["carotid 1 & 2"]], slot = "counts"))
+#Make new seurat object with carotid lymphoid  cells
+alllymphoid.carotid_1_2_srt <- CreateSeuratObject(counts = alllymphoid.raw.carotid_1_2.data , project = "carotid 1 & 2")
+#Sample 3
+alllymphoid.raw.carotid_3.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["carotid 3"]], slot = "counts"))
+#Make new seurat object with carotid lymphoid cells
+alllymphoid.carotid_3_srt <- CreateSeuratObject(counts = alllymphoid.raw.carotid_3.data , project = "carotid 3")
+#merge
+alllymphoid.Carotid_1_2_3_srt <- merge(x= alllymphoid.carotid_1_2_srt, y= alllymphoid.carotid_3_srt)
+#sample 4
+alllymphoid.raw.carotid_4.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["carotid 4"]], slot = "counts"))
+#Make new seurat object with carotid lymphoid cells
+alllymphoid.carotid_4_srt <- CreateSeuratObject(counts = alllymphoid.raw.carotid_4.data , project = "carotid 4")
+#merge
+alllymphoid.Carotid_All <- merge(x= alllymphoid.Carotid_1_2_3_srt, y= alllymphoid.carotid_4_srt)
+
+
+#Get assay lymphoiddata from all Femoral samples
+#Sample 1 & 2& 3
+alllymphoid.raw.femoral_1_2_3.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["femoral 1,2 & 3"]], slot = "counts"))
+#Make new seurat object with femoral lymphoid cells
+alllymphoid.femoral_1_2_3_srt <- CreateSeuratObject(counts = alllymphoid.raw.femoral_1_2_3.data , project = "femoral 1,2 & 3")
+#Sample 4
+alllymphoid.raw.femoral_4.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["femoral 4"]], slot = "counts"))
+#Make new seurat object with femoral lymphoid cells
+alllymphoid.femoral_4_srt <- CreateSeuratObject(counts = alllymphoid.raw.femoral_4.data , project = "femoral 4")
+#merge
+alllymphoid.femoral_1_2_3_4_srt <- merge(x= alllymphoid.femoral_1_2_3_srt, y= alllymphoid.femoral_4_srt)
+#Sample 5
+alllymphoid.raw.femoral_5.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["femoral 5"]], slot = "counts"))
+#Make new seurat object with femoral lymphoid cells
+alllymphoid.femoral_5_srt <- CreateSeuratObject(counts = alllymphoid.raw.femoral_5.data , project = "femoral 5")
+#merge
+alllymphoid.femoral_1_2_3_4_5_srt <- merge(x= alllymphoid.femoral_1_2_3_4_srt, y= alllymphoid.femoral_5_srt)
+#Sample 6
+alllymphoid.raw.femoral_6.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["femoral 6"]], slot = "counts"))
+#Make new seurat object with femoral lymphoid cells
+alllymphoid.femoral_6_srt <- CreateSeuratObject(counts = alllymphoid.raw.femoral_6.data , project = "femoral 6")
+#merge
+alllymphoid.femoral_1_2_3_4_5_6_srt <- merge(x= alllymphoid.femoral_1_2_3_4_5_srt, y= alllymphoid.femoral_6_srt)
+#Sample 7
+alllymphoid.raw.femoral_7.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["femoral 7"]], slot = "counts"))
+#Make new seurat object with femoral lymphoid cells
+alllymphoid.femoral_7_srt <- CreateSeuratObject(counts = alllymphoid.raw.femoral_7.data , project = "femoral 7")
+#merge
+alllymphoid.femoral_1_2_3_4_5_6_7_srt <- merge(x= alllymphoid.femoral_1_2_3_4_5_6_srt, y= alllymphoid.femoral_7_srt)
+#Sample 8
+alllymphoid.raw.femoral_8.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["femoral 8"]], slot = "counts"))
+#Make new seurat object with femoral lymphoid cells
+alllymphoid.femoral_8_srt <- CreateSeuratObject(counts = alllymphoid.raw.femoral_8.data , project = "femoral 8")
+#merge
+alllymphoid.femoral_1_2_3_4_5_6_7_8_srt <- merge(x= alllymphoid.femoral_1_2_3_4_5_6_7_srt, y= alllymphoid.femoral_8_srt)
+#Sample 9
+alllymphoid.raw.femoral_9.data <- as.matrix(GetAssayData(Carotid_Femoral_srt.AllLymphoid.List[["femoral 9"]], slot = "counts"))
+#Make new seurat object with femoral lymphoid cells
+alllymphoid.femoral_9_srt <- CreateSeuratObject(counts = alllymphoid.raw.femoral_9.data , project = "femoral 9")
+#merge
+alllymphoid.femoral_all_srt <- merge(x= alllymphoid.femoral_1_2_3_4_5_6_7_8_srt, y= alllymphoid.femoral_9_srt)
+
+#merge the newlymphoid seurat objects
+alllymphoid.Carotid_Femoral_srt <- merge(x= alllymphoid.Carotid_All, y= alllymphoid.femoral_all_srt)
+
+## Normalize and Scale the data ##
+# Log-transform the counts
+alllymphoid.Carotid_Femoral_srt <- NormalizeData(alllymphoid.Carotid_Femoral_srt)
+# Find Variable Features
+alllymphoid.Carotid_Femoral_srt  <- FindVariableFeatures(alllymphoid.Carotid_Femoral_srt)
+# Scale the data
+alllymphoid.Carotid_Femoral_srt <- ScaleData(alllymphoid.Carotid_Femoral_srt)
+# Run PCA
+alllymphoid.Carotid_Femoral_srt  <- RunPCA(alllymphoid.Carotid_Femoral_srt)
+#RUN UMAP
+alllymphoid.Carotid_Femoral_srt <- RunUMAP(alllymphoid.Carotid_Femoral_srt, dims = 1:30)
+#Show Dimplot
+DimPlot(alllymphoid.Carotid_Femoral_srt, reduction = "umap", group.by = "orig.ident")
+
+##change original sample to either "carotid" or "femoral"
+alllymphoid.Carotid_Femoral_srt <- RenameIdents(alllymphoid.Carotid_Femoral_srt, 
+                                                'carotid 1 & 2' = 'carotid',
+                                                'carotid 3' = 'carotid',
+                                                'carotid 4' = 'carotid',
+                                                'femoral 1,2 & 3' = 'femoral',
+                                                'femoral 4' = 'femoral',
+                                                'femoral 5' = 'femoral',
+                                                'femoral 6' = 'femoral',
+                                                'femoral 7' = 'femoral',
+                                                'femoral 8' = 'femoral',
+                                                'femoral 9' = 'femoral')
+
+
+
+#Add these idents into new column labelled "type"
+alllymphoid.Carotid_Femoral_srt$type <- Idents(alllymphoid.Carotid_Femoral_srt)
+#show dimplot with just carotid and femoral
+DimPlot(alllymphoid.Carotid_Femoral_srt, reduction = "umap", group.by = "type")
+
+Idents(alllymphoid.Carotid_Femoral_srt) <- alllymphoid.Carotid_Femoral_srt$orig.ident
+
+
+##INTEGRATE###
+#Run Harmony
+alllymphoid.Carotid_Femoral_srt.int <- RunHarmony(alllymphoid.Carotid_Femoral_srt, group.by.vars = "orig.ident")
+#Run UMAP
+alllymphoid.Carotid_Femoral_srt.int <- RunUMAP(alllymphoid.Carotid_Femoral_srt.int, reduction = "harmony", dims = 1:30)
+#Show UMAP by sample and type
+my_cols_samples = brewer.pal(10,"Paired")
+UMAP_lymphoid_samples <- DimPlot(alllymphoid.Carotid_Femoral_srt.int, group.by='orig.ident',cols=alpha(my_cols_samples,0.5),pt.size=0.6)
+my_cols_type = brewer.pal(8,"Dark2")
+UMAP_lymphoid_type <- DimPlot(alllymphoid.Carotid_Femoral_srt.int, group.by='type',cols=alpha(my_cols_type,0.33),pt.size=0.6)
+
+# Find nearest neighbors and construct the graph
+alllymphoid.Carotid_Femoral_srt.int <- FindNeighbors(alllymphoid.Carotid_Femoral_srt.int, k.param = 50, dims = 1:15)
+# Find the clusters
+alllymphoid.Carotid_Femoral_srt.int <- FindClusters(alllymphoid.Carotid_Femoral_srt.int, resolution = 0.20)
+
+# Plot the UMAP with clustering
+UMAP_clusters <- DimPlot(alllymphoid.Carotid_Femoral_srt.int, reduction = "umap", label = TRUE, label.size = 5, pt.size = 0.6) 
+DimPlot(alllymphoid.Carotid_Femoral_srt.int, split.by = "type", reduction = "umap", label = TRUE, label.size = 5, pt.size = 0.6)
+
+############### Cell Classification using known cell markers #################
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "CD2")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "CD3D")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "CD4")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "CD8A")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "KLRB1")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "CD79A")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "NKG7")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "IGHM")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "IGHG2")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "GNLY")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "GZMK")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "TNF")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "IFNG")
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "LEF1")#naive
+VlnPlot(alllymphoid.Carotid_Femoral_srt.int, features = "CCR7")
+
+new.idents.lymphoid <- c(
+  "0" = "CD3+CD4+ T Cells",
+  "1" = "CD3+CD8+ T Cells I",
+  "2" = "CD3+CD8+ T Cells II",
+  "3" = "Natural Killer cells",
+  "4" = "undifferentiated T cells",
+  "5" = "B Cells 1",
+  "6" = "B cells 1",
+  "7" = "CD4+ T reg cells",
+  "8" = "Plasma cells"
+)
+
+# Create Legend for UMAP
+alllymphoid.Carotid_Femoral_srt.int <- RenameIdents(alllymphoid.Carotid_Femoral_srt.int, new.idents.lymphoid)
+alllymphoid.Carotid_Femoral_srt.int$cell_type <- Idents(alllymphoid.Carotid_Femoral_srt.int)
+DimPlot(alllymphoid.Carotid_Femoral_srt.int, reduction = "umap", label = TRUE, label.size = 5, pt.size = 0.6) + UMAP_clusters
+
+############### Dotplot #################
+#Ensure Idents are set to the cluster
+Idents(alllymphoid.Carotid_Femoral_srt.int) <- alllymphoid.Carotid_Femoral_srt.int$seurat_clusters
+#Find Markers in all cells ###
+alllymphoid.Carotid_Femoral_srt.int.markers <- Seurat::FindAllMarkers(alllymphoid.Carotid_Femoral_srt.int, assay = "RNA", only.pos = TRUE)
+write.csv(alllymphoid.Carotid_Femoral_srt.int.markers, "alllymphoid.Carotid_Femoral_srt.int.markers.csv")
+
+# Top 5 marker genes in each cluster #
+top5.lymphoid <- alllymphoid.Carotid_Femoral_srt.int.markers %>% group_by(cluster) %>%
+  dplyr::slice_max(get(grep("^avg_log", colnames(alllymphoid.Carotid_Femoral_srt.int.markers), value = TRUE)),
+                   n = 5)
+# Create the dot plot
+Seurat::DotPlot(alllymphoid.Carotid_Femoral_srt.int, features = unique(top5.lymphoid$gene)) +
+  ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 1,
+                                                     size = 8, hjust = 1)) +
+  Seurat::NoLegend() +
+  ggplot2::coord_flip()
+
+# Creat a heatmap
+Heatmap_lymphoid <- DoHeatmap(alllymphoid.Carotid_Femoral_srt.int, features = unique(top5.lymphoid$gene), group.by = "seurat_clusters",
+                              group.colors = c('#F6BAA2', '#AEDFF2', '#C7E5B4')) +
+  scale_fill_viridis() 
+
+ggsave(filename = "Heatmap_lymphoid_Final.png", plot = Heatmap_lymphoid, width = 7.5, height = 6.4, dpi = 600)
+
+############### Proportions and LogOdds ratios################################
+
+#odds ratios and Fishers exact test #
+# Compare Cells in each Cluster
+compTable_lymphoid <- table(alllymphoid.Carotid_Femoral_srt.int$type, alllymphoid.Carotid_Femoral_srt.int$seurat_clusters)
+compTable_lymphoid_Perc <- (compTable_lymphoid  / rowSums(compTable_lymphoid )) * 100
+
+#odds ratios and Fishers exact test #
+cluster0_ORtable <- matrix(c(3386,5555,367,4094), nrow = 2, ncol = 2)
+oddsratio.wald(cluster0_ORtable)
+
+cluster1_ORtable <- matrix(c(3043,5898,632,3829), nrow = 2, ncol = 2)
+oddsratio.wald(cluster1_ORtable)
+
+cluster2_ORtable <- matrix(c(1068,7873,1784,2677), nrow = 2, ncol = 2)
+oddsratio.wald(cluster2_ORtable)
+
+cluster3_ORtable <- matrix(c(443,8498,394,4067), nrow = 2, ncol = 2)
+oddsratio.wald(cluster3_ORtable)
+
+cluster4_ORtable <- matrix(c(526,8415,266,4195), nrow = 2, ncol = 2)
+oddsratio.wald(cluster4_ORtable)
+
+cluster5_ORtable <- matrix(c(285,8656,506,3955), nrow = 2, ncol = 2)
+oddsratio.wald(cluster5_ORtable)
+
+cluster6_ORtable <- matrix(c(82,8859,369,4092), nrow = 2, ncol = 2)
+oddsratio.wald(cluster6_ORtable)
+
+cluster7_ORtable <- matrix(c(108,8833,143,4318), nrow = 2, ncol = 2)
+oddsratio.wald(cluster7_ORtable)
+
+################# DIFFERENTIAL EXPRESSOIN WITH VOLCANO PLOTS ###############################
+car_vs_fem.lymphoid.all <- FindMarkers(alllymphoid.Carotid_Femoral_srt.int, ident.1 = "carotid", ident.2 = "femoral", group.by = "type", only.pos = FALSE)
+
+keyvals <- ifelse(
+  car_vs_fem.lymphoid.all$avg_log2FC < -0.25, 'royalblue',
+  ifelse(car_vs_fem.lymphoid.all$avg_log2FC > 0.25, 'gold',
+         'black')
+)
+
+keyvals[is.na(keyvals)] <- 'black'
+names(keyvals)[keyvals == 'gold'] <- 'Carotid'
+names(keyvals)[keyvals == 'White'] <- 'Null'
+names(keyvals)[keyvals == 'royalblue'] <- 'Femoral'
+
+
+volcano_lymphoid <- EnhancedVolcano(car_vs_fem.lymphoid.all,
+                                    lab = rownames(car_vs_fem.lymphoid.all),
+                                    title = 'Lymphoid',
+                                    x = 'avg_log2FC',
+                                    y = 'p_val_adj',
+                                    xlim = c(-3, 3),
+                                    selectLab = rownames(car_vs_fem.lymphoid.all)[which(names(keyvals) %in% c('Carotid', 'Femoral'))],
+                                    labSize = 4.5,
+                                    colCustom = keyvals,
+                                    FCcutoff = 0.25,
+                                    legendPosition = 'right',
+                                    gridlines.major = FALSE,
+                                    gridlines.minor = FALSE
+)
+
+ggsave(filename = "Volcano_lymphoid.svg", plot = volcano_lymphoid, width = 10, height = 10, dpi = 600)
+
+# DE between Carotid and Femoral - Volcano plots AND GO Bar Graphs for clusters of interest  for each Cluster ###########################
+#Switch in desired cluster
+carVfem_lymphoid8 <- FindMarkers(alllymphoid.Carotid_Femoral_srt.int, ident.1 = "carotid", ident.2 = "femoral", only.pos = FALSE,
+                                group.by = "type", subset.ident = 8)
+
+#Volcano Plot
+keyvals <- ifelse(
+  carVfem_lymphoid8$avg_log2FC < -0.25, 'Royalblue',
+  ifelse(carVfem_lymphoid8$avg_log2FC > 0.25, 'gold',
+         'black')
+)
+
+keyvals[is.na(keyvals)] <- 'black'
+names(keyvals)[keyvals == 'gold'] <- 'Carotid'
+names(keyvals)[keyvals == 'White'] <- 'Null'
+names(keyvals)[keyvals == 'Royalblue'] <- 'Femoral'
+
+
+EnhancedVolcano(carVfem_lymphoid8,
+                lab = rownames(carVfem_lymphoid8),
+                title = 'Cluster 8',
+                x = 'avg_log2FC',
+                y = 'p_val_adj',
+                selectLab = rownames(carVfem_lymphoid8),
+                labSize = 4.5,
+                colCustom = keyvals,
+                FCcutoff = 0.25,
+                legendPosition = 'right',
+)
