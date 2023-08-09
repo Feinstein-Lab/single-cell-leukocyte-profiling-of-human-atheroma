@@ -1,0 +1,24 @@
+#CellTypist w Python
+import os
+os.chdir('C:/Users/slysz/Celltypist')
+
+import celltypist
+from celltypist import models
+models.download_models(force_update = True)
+models.models_path
+model = models.Model.load(model = 'Immune_All_High.pkl')
+model
+model.cell_types
+
+import scanpy as sc
+import pandas as pd
+data = sc.read('Carotid_Femoral_srt.int.h5ad')
+predictions = celltypist.annotate(data, model = 'Immune_All_High.pkl', majority_voting= True, mode = 'best match')
+predictions.predicted_labels
+adata = predictions.to_adata()
+adata.obs
+sc.tl.umap(adata)
+celltypist.dotplot(predictions, use_as_reference = 'seurat_clusters', use_as_prediction = 'predicted_labels')
+celltypist.dotplot(predictions, use_as_reference = 'seurat_clusters', use_as_prediction = 'majority_voting')
+
+predictions.predicted_labels.to_csv('predicted_labels_high_allcells.csv')
